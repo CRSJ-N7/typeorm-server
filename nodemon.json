@@ -1,0 +1,8 @@
+{
+  "verbose": true,
+  "legacyWatch": true,
+  "ignore": [
+    "*/**/*.test.ts",
+    "build"
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "name": "learn-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon --watch 'src/**/*.ts' --exec \"ts-node\" src/server.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "lint": "eslint . -c ./.eslintrc.js --ext .ts --ignore-path .eslintignore",
+    "lint:fix": "npm run lint -- --fix",
+    "typeorm-cli": "ts-node node_modules/typeorm/cli.js --dataSource src/db/dataSource.ts",
+    "db:sync": "npm run typeorm-cli -- migration:generate -p src/db/migrations/sync",
+    "db:migrate:up": "npm run typeorm-cli -- migration:run",
+    "db:migrate:down": "npm run typeorm-cli -- migration:revert"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.21"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.33.1",
+    "@typescript-eslint/parser": "^5.33.1",
+    "eslint": "^8.57.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "nodemon": "^3.1.9",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  }
+}

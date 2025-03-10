@@ -1,0 +1,5 @@
+node_modules
+build
+public/*
+!public/.gitkeep
+src/db/todos.json
