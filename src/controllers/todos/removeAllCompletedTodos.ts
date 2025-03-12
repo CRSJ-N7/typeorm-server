@@ -1,11 +1,16 @@
 import { type Request, type Response } from 'express';
-import { readTodos, writeTodos } from '../../db/todosData';
+import { type DeleteResult } from 'typeorm';
+import { getTodoRepository } from '../../db/todoRepository';
 
 export const removeAllCompleted = async (req: Request, res: Response<void | { message: string }>) => {
   try {
-    const todos = await readTodos();
-    const updatedTodos = todos.filter((todo) => !todo.isCompleted);
-    await writeTodos(updatedTodos);
+    const todoRepository = getTodoRepository();
+    const deletedResult: DeleteResult = await todoRepository.delete({ isCompleted: true });
+
+    if (deletedResult.affected === 0) {
+      res.status(404).json({ message: 'Todo not found' });
+      return;
+    }
     res.status(204).send();
   } catch (error) {
     console.error('Error toggling all todos:', error);

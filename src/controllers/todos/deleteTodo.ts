@@ -1,16 +1,18 @@
 import { type Request, type Response } from 'express';
-import { readTodos, writeTodos } from '../../db/todosData';
+import { type DeleteResult } from 'typeorm';
+import { getTodoRepository } from '../../db/todoRepository';
 
-export const deleteTodo = async (req: Request<{id: string}>, res: Response<void | { message: string }>) => {
+export const deleteTodo = async (req: Request<{id: number}>, res: Response<void | { message: string }>) => {
   try {
-    const todos = await readTodos();
     const todoId = req.params.id;
-    const index = todos.findIndex((todo) => todo.id === todoId);
-    if (index === -1) {
+    const todoRepository = getTodoRepository();
+    const deletedResult: DeleteResult = await todoRepository.delete(todoId);
+
+    if (deletedResult.affected === 0) {
       res.status(404).json({ message: 'Todo not found' });
+      return;
     }
-    todos.splice(index, 1);
-    await writeTodos(todos);
+    console.info(deletedResult);
     res.status(204).send();
   } catch (error) {
     console.error('Error deleting todo:', error);

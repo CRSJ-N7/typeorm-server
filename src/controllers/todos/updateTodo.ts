@@ -1,31 +1,29 @@
 import { type Request, type Response } from 'express';
 import { type Todo } from '../../types';
-import { readTodos, writeTodos } from '../../db/todosData';
+import { getTodoRepository } from '../../db/todoRepository';
 
-export const updateTodo = async (req: Request<{ id: string }, unknown, Partial<Todo>>, res: Response<Todo | { message: string }>) => {
+export const updateTodo = async (req: Request<{ id: number }, unknown, Partial<Todo>>, res: Response<Todo | { message: string }>) => {
   try {
-    const todos = await readTodos();
+    const todoRepository = getTodoRepository();
     const todoId = req.params.id;
-    const index = todos.findIndex((todo) => todo.id === todoId);
-
-    if (index === -1) {
+    const todo = await todoRepository.findOne({ where: { id: todoId } });
+    if (!todo) {
       res.status(404).json({ message: 'Todo not found' });
-    } else {
-      if (req.body.text !== undefined) {
-        const trimmedText = req.body.text.replace(/\s+/g, ' ').trim(); // 👹
-        if (!trimmedText) {
-          res.status(400).json({ message: 'Text cannot be empty' });
-          return;
-        }
-        todos[index].text = trimmedText;
-      }
-      if (req.body.isCompleted !== undefined) {
-        todos[index].isCompleted = req.body.isCompleted;
-      }
+      return;
     }
-
-    await writeTodos(todos);
-    res.status(200).json(todos[index]);
+    const text = req.body.title;
+    const todoIsCompleted = req.body.isCompleted;
+    // console.info(typeof todoIsCompleted);
+    if (text !== undefined && typeof text === 'string' && text.trim()) {
+      const trimmedText = text.replace(/\s+/g, ' ').trim(); // ТС даже на комментарии ругается! Надеюсь вспомню, что тут хотел сказать.
+      todo.title = trimmedText;
+      await todoRepository.save(todo);
+    }
+    if (req.body.isCompleted !== undefined && typeof req.body.isCompleted === 'boolean') {
+      todo.isCompleted = !!todoIsCompleted; // вот тут я сам с себя прихуел, ты видал ваще такое???
+      await todoRepository.save(todo);
+    }
+    res.status(200).json(todo);
   } catch (error) {
     console.error('Error updating todo:', error);
     res.status(500).json({ message: 'Failed to update todo' });

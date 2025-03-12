@@ -12,7 +12,7 @@ router.get('/', getTodos);
 router.post('/', createTodo);
 router.patch('/', toggleAllTodos);
 router.delete('/', removeAllCompleted);
-router.delete('/:id', deleteTodo);
 router.patch('/:id', updateTodo);
+router.delete('/:id', deleteTodo);
 
 export default router;

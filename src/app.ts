@@ -2,8 +2,10 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import todosRouter from './routes/todos';
+import { AppDataSource } from './db/dataSource';
 import 'reflect-metadata';
 
+AppDataSource.initialize();
 const app = express();
 
 app.use(express.json());

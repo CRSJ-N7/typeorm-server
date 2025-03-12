@@ -1,15 +1,15 @@
 import { type Request, type Response } from 'express';
-import { readTodos, writeTodos } from '../../db/todosData';
+import { getTodoRepository } from '../../db/todoRepository';
 
 export const toggleAllTodos = async (req: Request, res: Response<void | { message: string }>) => {
   try {
-    const todos = await readTodos();
-    const hasCompletedTasks = todos.some((todo) => todo.isCompleted);
-    const updatedTodos = todos.map((todo) => ({
-      ...todo,
-      isCompleted: !hasCompletedTasks,
-    }));
-    await writeTodos(updatedTodos);
+    const todoRepository = getTodoRepository();
+    const hasCompletedTasks = await todoRepository.count({ where: { isCompleted: true } });
+    if (hasCompletedTasks) {
+      await todoRepository.update({}, { isCompleted: false });
+    } else {
+      await todoRepository.update({}, { isCompleted: true });
+    }
     res.status(204).send();
   } catch (error) {
     console.error('Error toggling all todos:', error);

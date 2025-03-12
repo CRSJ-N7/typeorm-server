@@ -1,6 +1,6 @@
 import { type Request, type Response } from 'express';
 import { type TodoData } from '../../types';
-import { readTodos } from '../../db/todosData';
+import { getTodoRepository } from '../../db/todoRepository';
 
 type GetTodosQuery = {
   filter: 'all' | 'completed' | 'active';
@@ -8,7 +8,10 @@ type GetTodosQuery = {
   limit: string;
 };
 
-export const getTodos = async (req: Request<unknown, unknown, unknown, GetTodosQuery>, res: Response<TodoData | { message: string}>) => {
+export const getTodos = async (
+  req: Request<unknown, unknown, unknown, GetTodosQuery>,
+  res: Response<TodoData | { message: string }>,
+) => {
   try {
     const { filter, page, limit } = req.query;
 
@@ -16,38 +19,34 @@ export const getTodos = async (req: Request<unknown, unknown, unknown, GetTodosQ
       res.status(400).json({ message: 'Missing filter, page, or limit parameters' });
       return;
     }
-    const todos = await readTodos();
 
-    let activeTodosCount = 0;
-    const filteredTodos = todos.filter((todo) => {
-      if (!todo.isCompleted) {
-        activeTodosCount++;
-      }
+    const todoRepository = getTodoRepository();
 
-      if (filter === 'all') {
-        return true;
-      }
+    let whereConditions = {};
 
-      if (filter === 'completed') {
-        return todo.isCompleted;
-      }
+    if (filter === 'completed') {
+      whereConditions = { isCompleted: true };
+    }
+    if (filter === 'active') {
+      whereConditions = { isCompleted: false };
+    }
 
-      if (filter === 'active') {
-        return !todo.isCompleted;
-      }
+    const allTodosCount = await todoRepository.count();
 
-      return false;
+    const pageNumber = parseInt(page, 10);
+    const limitNumber = parseInt(limit, 10);
+    const startIndex = (pageNumber - 1) * limitNumber;
+
+    const paginatedTodos = await todoRepository.find({
+      where: whereConditions,
+      skip: startIndex,
+      take: limitNumber,
     });
 
-    const pageNumber = parseInt(page as string, 10);
-    const limitNumber = parseInt(limit as string, 10);
-    const startIndex = (pageNumber - 1) * limitNumber;
-    const endIndex = startIndex + limitNumber;
-    const paginatedTodos = filteredTodos.slice(startIndex, endIndex);
-
-    const allTodosCount = todos.length;
+    const activeTodosCount = await todoRepository.count({ where: { isCompleted: false } });
     const completedTodosCount = allTodosCount - activeTodosCount;
-    const maxPages = Math.ceil(filteredTodos.length / limitNumber);
+
+    const maxPages = Math.ceil(allTodosCount / limitNumber);
 
     res.status(200).json({
       payload: paginatedTodos,
