@@ -1,8 +1,13 @@
-import { type Request, type Response } from 'express';
+import { type RequestHandler } from 'express';
 import { type DeleteResult } from 'typeorm';
+import { type CommonResponse } from 'src/types';
 import { getTodoRepository } from '../../db/todoRepository';
 
-export const deleteTodo = async (req: Request<{id: number}>, res: Response<void | { message: string }>) => {
+type DeleteTodoParams = {
+  id: string;
+};
+
+export const deleteTodo: RequestHandler<DeleteTodoParams, CommonResponse> = async (req, res) => {
   try {
     const todoId = req.params.id;
     const todoRepository = getTodoRepository();
@@ -12,7 +17,6 @@ export const deleteTodo = async (req: Request<{id: number}>, res: Response<void 
       res.status(404).json({ message: 'Todo not found' });
       return;
     }
-    console.info(deletedResult);
     res.status(204).send();
   } catch (error) {
     console.error('Error deleting todo:', error);

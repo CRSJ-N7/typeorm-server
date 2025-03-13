@@ -10,8 +10,8 @@ const router = express.Router();
 
 router.get('/', getTodos);
 router.post('/', createTodo);
-router.patch('/', toggleAllTodos);
-router.delete('/', removeAllCompleted);
+router.patch('/toggle-all', toggleAllTodos);
+router.delete('/remove-all-completed', removeAllCompleted);
 router.patch('/:id', updateTodo);
 router.delete('/:id', deleteTodo);
 

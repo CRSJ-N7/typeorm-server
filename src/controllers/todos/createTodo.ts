@@ -1,9 +1,15 @@
-import { type Request, type Response } from 'express';
+import { type RequestHandler } from 'express';
 import { type Todo } from '../../types';
 import { getTodoRepository } from '../../db/todoRepository';
 
-export const createTodo = async (req: Request<unknown, unknown, { title: string }>, res: Response<Todo | { message: string }>) => {
-  const { title } = req.body;
+type CreateTodoRequest = {
+  title: string;
+};
+
+type CreateTodoResponse = Todo | { message: string };
+
+export const createTodo: RequestHandler<unknown, CreateTodoResponse, CreateTodoRequest> = async (req, res) => {
+  const { title } = req.body; // Почему обязательно использовать деструктуризацию? Я же явно указал тип req и что там лежит title: string
   if (!title || typeof title !== 'string' || title.trim() === '') {
     res.status(400).json({ message: 'Invalid input: text required' });
     return;

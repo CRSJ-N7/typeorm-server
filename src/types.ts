@@ -3,12 +3,6 @@ export type Todo = {
   isCompleted: boolean;
 };
 
-export type TodoData = {
-  payload: Todo[];
-  meta: {
-    allTodosCount: number;
-    completedTodosCount: number;
-    activeTodosCount: number;
-    maxPages: number;
-  };
-};
+export type CommonResponse = void | { message: string };
+
+export type idParams = { id: string };
